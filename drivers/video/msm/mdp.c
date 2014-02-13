@@ -2870,6 +2870,7 @@ static int mdp_probe(struct platform_device *pdev)
 			mdp_bw_ib_factor = mdp_pdata->mdp_bw_ib_factor;
 
 		mdp_rev = mdp_pdata->mdp_rev;
+
 #ifdef CONFIG_MACH_APQ8064_FIND5
 #ifdef FORBID_POWER_COLLAPSE
 		pm_qos_add_request(&mdp_pm_qos_req_dma,
@@ -2879,11 +2880,12 @@ static int mdp_probe(struct platform_device *pdev)
 		printk ("%s: pm_qos_update_request", __func__);
 #endif
 #endif
+
 		mdp_iommu_split_domain = mdp_pdata->mdp_iommu_split_domain;
 
 #ifdef CONFIG_MACH_N1
-        if((get_boot_mode() != MSM_BOOT_MODE__NORMAL) && (get_boot_mode() != MSM_BOOT_MODE__RECOVERY))
-            mdp_pdata->cont_splash_enabled = 0;
+        	if((get_boot_mode() != MSM_BOOT_MODE__NORMAL) && (get_boot_mode() != MSM_BOOT_MODE__RECOVERY))
+		mdp_pdata->cont_splash_enabled = 0;
 #endif
 
 		rc = mdp_irq_clk_setup(pdev, mdp_pdata->cont_splash_enabled);
@@ -3489,6 +3491,7 @@ static int mdp_remove(struct platform_device *pdev)
 		mdp_bus_scale_handle = 0;
 	}
 #endif
+
 #ifdef CONFIG_MACH_APQ8064_FIND5
 #ifdef FORBID_POWER_COLLAPSE
 	pm_qos_update_request(&mdp_pm_qos_req_dma,
@@ -3496,6 +3499,7 @@ static int mdp_remove(struct platform_device *pdev)
 	printk ("%s: pm_qos_update_request", __func__);
 #endif
 #endif
+
 	return 0;
 }
 

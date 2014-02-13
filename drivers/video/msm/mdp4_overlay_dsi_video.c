@@ -521,6 +521,7 @@ static void mdp4_dsi_video_tg_off(struct vsycn_ctrl *vctrl)
 #ifdef CONFIG_MACH_APQ8064_FIND5
 extern int mipi_dsi_panel_power(int on);
 #endif
+
 int mdp4_dsi_video_splash_done(void)
 {
 	struct vsycn_ctrl *vctrl;

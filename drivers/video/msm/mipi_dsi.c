@@ -30,7 +30,9 @@
 #include <mach/gpio.h>
 #include <mach/clk.h>
 
+#ifdef CONFIG_MACH_N1
 #include <linux/pcb_version.h>
+#endif
 
 #include "msm_fb.h"
 #include "mipi_dsi.h"
@@ -84,7 +86,8 @@ static int mipi_dsi_fps_level_change(struct platform_device *pdev,
 	mipi_dsi_configure_fb_divider(fps_level);
 	return 0;
 }
-#if defined (CONFIG_MACH_APQ8064_FIND5) || defined (CONFIG_MACH_N1)
+
+#if defined(CONFIG_MACH_APQ8064_FIND5) || defined(CONFIG_MACH_N1)
 int mipi_dsi_off(struct platform_device *pdev)
 #else
 static int mipi_dsi_off(struct platform_device *pdev)
@@ -105,21 +108,21 @@ static int mipi_dsi_off(struct platform_device *pdev)
 		down(&mfd->dma->mutex);
 
 	if (mfd->panel_info.type == MIPI_CMD_PANEL) {
-		#ifdef PANEL_SRE
+#ifdef PANEL_SRE
 		if(get_pcb_version() >= PCB_VERSION_EVT_N1)
 		{
 			mutex_lock(&sre_mutex);
 		}
-		#endif
+#endif
 		mipi_dsi_prepare_ahb_clocks();
 		mipi_dsi_ahb_ctrl(1);
 		mipi_dsi_clk_enable();
-		#ifdef PANEL_SRE
+#ifdef PANEL_SRE
 		if(get_pcb_version() >= PCB_VERSION_EVT_N1)
 		{
 			mutex_unlock(&sre_mutex);
 		}
-		#endif
+#endif
 
 		/* make sure dsi_cmd_mdp is idle */
 		mipi_dsi_cmd_mdp_busy();
@@ -170,7 +173,7 @@ static int mipi_dsi_off(struct platform_device *pdev)
 	return ret;
 }
 
-#if defined (CONFIG_MACH_APQ8064_FIND5) || defined (CONFIG_MACH_N1)
+#if defined(CONFIG_MACH_APQ8064_FIND5) || defined(CONFIG_MACH_N1)
 int mipi_dsi_on(struct platform_device *pdev)
 #else
 static int mipi_dsi_on(struct platform_device *pdev)
@@ -487,9 +490,9 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 
 		return 0;
 	}
-       #ifdef PANEL_SRE
+#ifdef PANEL_SRE
        mutex_init(&sre_mutex);
-       #endif
+#endif
 
 	if (!mipi_dsi_resource_initialized)
 		return -EPERM;
@@ -505,7 +508,7 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 	if (pdev_list_cnt >= MSM_FB_MAX_DEV_LIST)
 		return -ENOMEM;
 
-#if defined (CONFIG_MACH_APQ8064_FIND5) || defined (CONFIG_MACH_N1)
+#ifdef CONFIG_MACH_APQ8064_FIND5
 	if (!mfd->cont_splash_done)
 		cont_splash_clk_ctrl(1);
 #endif
@@ -513,13 +516,10 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 	mdp_dev = platform_device_alloc("mdp", pdev->id);
 	if (!mdp_dev)
 		return -ENOMEM;
-#ifdef CONFIG_MACH_APQ8064_FIND5
+
+
+#if defined (CONFIG_MACH_APQ8064_FIND5) || defined (CONFIG_MACH_N1)
 	g_mdp_dev = mdp_dev;
-#endif
-
-
-#ifdef CONFIG_MACH_N1
-    g_mdp_dev = mdp_dev;
 #endif
 
 	/*
