@@ -402,6 +402,8 @@ CONFIG_OPPO_OFFMODE_ALARM=y
 # Faux123 voltage control
 #
 # CONFIG_CPU_VOLTAGE_TABLE is not set
+CONFIG_UPDATE_LCDC_LUT=y
+CONFIG_LCD_KCAL_STANDALONE=m
 
 #
 # Showp1984 mpdecision and thermal control
