@@ -1,0 +1,104 @@
+#!/bin/bash
+clear
+wmctrl -r :ACTIVE: -N "Applying Build Settings"
+now=$(date +"%T")
+echo "Current time : $now"
+echo "Applying Build Settings"
+sleep 1
+
+#CONFIGS
+export USER=$(logname)
+sleep 1
+echo "Setting ARM Arch"
+export ARCH=arm
+sleep 1
+echo "Setting Defconfig"
+export DEFCONFIG=find5_defconfig
+sleep 1
+echo "Setting Date And Time For Zip File"
+export NOW=$(date +"%m-%d-%y_%H:%M")
+sleep 1
+echo "Setting Toolchain Location"
+export TOOLCHAIN=/home/$USER/toolchains/prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.8-kk-devel/bin/arm-linux-androideabi-
+sleep 1
+echo "Setting Toolchain Strip Location"
+export TSTRIP=/home/$USER/toolchains/prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.8-kk-devel/bin/arm-linux-androideabi-strip
+sleep 1
+echo "Setting Strip Arguments"
+export STRIP=--strip-unneeded
+sleep 1
+echo "Setting CPU Cores/Threads"
+export CPUS=`nproc`
+sleep 1
+echo "Setting zImage Location For Packer"
+export ZIMAGE=arch/arm/boot/zImage
+sleep 1
+echo "Enviroment Setup Complete Now Moving To Compiling"
+sleep 1
+
+#Build
+echo "Cleaning Out Compiled Files"
+sleep 1
+make clean
+wmctrl -r :ACTIVE: -N "Starting Build Process"
+echo "Starting Build Process"
+sleep 1
+if [ -f .config ];
+then
+   echo ".config exists"
+   echo "Continuing To Compiler"
+   sleep 1
+else
+   echo ".config Does Not Exists"
+   echo "Compiling From find5_defconfig"
+   make ARCH=$ARCH CROSS_COMPILE=$TOOLCHAIN $DEFCONFIG
+   sleep 1
+fi
+make ARCH=$ARCH CROSS_COMPILE=$TOOLCHAIN -j$CPUS
+
+if [ -f $ZIMAGE ];
+then
+   echo "$ZIMAGE exists"
+   echo "Compile Complete Continuing To Stripping"
+   sleep 1
+else
+   echo "$ZIMAGE Does Not Exists Please Check For Compile Errors"
+   echo "Now exiting script"
+   sleep 1
+   exit 0
+fi
+
+wmctrl -r :ACTIVE: -N "Stripping"
+echo "Stripping wlan.ko Down To Normal Size"
+sleep 1
+find . -type f -name 'wlan.ko' | xargs -n 1 $TSTRIP $STRIP
+
+#Packing
+wmctrl -r :ACTIVE: -N "Packing"
+echo "Starting Packing To Recovery Flashable Zip"
+cd packer/
+echo "Removing Old Files"
+rm -rf kernel/zImage
+rm -rf system/lib/modules/wlan.ko
+sleep 1
+echo "Copying zImage"
+find '../' -name "zImage" -exec cp -av {} kernel/ \;
+sleep 1
+echo "Copying wlan.ko"
+find '../' -name "wlan.ko" -exec cp -av {} system/lib/modules/ \;
+sleep 1
+echo "Compiling CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip"
+sleep 1
+zip -r CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip system/ kernel/ META-INF/
+echo "Signing Zip"
+sleep 1
+java -classpath testsign.jar testsign CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip CodefireX-Kernel-$(logname)-V1.0-"$NOW"-Signed.zip
+echo "Renamed CodefireX-Kernel-$(logname)-V1.0-"$NOW"-Signed.zip To CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip"
+sleep 1
+mv CodefireX-Kernel-$(logname)-V1.0-"$NOW"-Signed.zip CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip
+echo "Completed Builing CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip"
+sleep 1
+echo "Look In The Packer Folder For CodefireX-Kernel-$(logname)-V1.0-"$NOW".zip And Flash It ;)"
+wmctrl -r :ACTIVE: -N "Terminal"
+nowf=$(date +"%T")
+echo "Completion Time : $nowf"

@@ -1,0 +1,35 @@
+show_progress(0.500000, 0);
+
+ui_print(" ");
+ui_print("*****************************************");
+ui_print("*                                       *");
+ui_print("*        Find 5 Any Kernel              *");
+ui_print("*                                       *");
+ui_print("*****************************************");
+ui_print(" ");
+ui_print("Extracting kernel files");
+package_extract_dir("kernel", "/tmp");;
+set_perm(0, 0, 0777, "/tmp/unpackbootimg");
+set_perm(0, 0, 0777, "/tmp/dd");
+set_perm(0, 0, 0777, "/tmp/abootimg");
+set_perm(0, 0, 0777, "/tmp/bootimg.cfg");
+ui_print(" > Done.");
+
+ui_print("Installing system");
+mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
+package_extract_dir("system", "/system");
+set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
+show_progress(0.200000, 0);
+show_progress(0.200000, 10);
+ui_print(" > Done.");
+
+ui_print("Installing boot");
+run_program("/tmp/dd", "if=/dev/block/platform/msm_sdcc.1/by-name/boot", "of=/tmp/boot.img");
+run_program("/tmp/unpackbootimg", "-i", "/tmp/boot.img", "-o", "/tmp/");
+run_program("/tmp/abootimg", "--create", "/tmp/boot.img", "-f", "/tmp/bootimg.cfg", "-k", "/tmp/zImage", "-r", "/tmp/boot.img-ramdisk.gz");
+run_program("/tmp/dd", "if=/tmp/boot.img", "of=/dev/block/platform/msm_sdcc.1/by-name/boot");
+unmount("/system");
+show_progress(0.100000, 0);
+ui_print(" > Done.");
+ui_print(" ");
+ui_print("Installation is completed.");
